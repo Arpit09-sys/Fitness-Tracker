@@ -1,4 +1,7 @@
-node_modules/
 .env
-uploads/
+target/
+*.class
 .DS_Store
+.idea/
+*.iml
+.vscode/

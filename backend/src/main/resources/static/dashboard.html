@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="dashboard.html" class="logo">Fit<span>Track</span></a>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="progress.html">Progress</a></li>
+            <li><a href="workout.html">Workouts</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><button class="btn-logout" onclick="logout()">Logout</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title" id="welcome-msg">Welcome back!</h1>
+
+        <!-- Stats Overview -->
+        <div class="grid-4" id="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-value" id="stat-weight">--</div>
+                <div class="stat-label">Weight (kg)</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value" id="stat-height">--</div>
+                <div class="stat-label">Height (cm)</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value" id="stat-bmi">--</div>
+                <div class="stat-label">BMI</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value" id="stat-goal">--</div>
+                <div class="stat-label">Goal</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- BMI Section -->
+            <div class="card">
+                <h3>BMI Analysis</h3>
+                <p id="bmi-text" class="mb-2">Complete your profile to see BMI</p>
+                <div class="bmi-bar" id="bmi-bar" style="display:none;">
+                    <div class="bmi-indicator" id="bmi-indicator"></div>
+                </div>
+                <div class="bmi-labels" id="bmi-labels" style="display:none;">
+                    <span>Underweight</span>
+                    <span>Normal</span>
+                    <span>Overweight</span>
+                    <span>Obese</span>
+                </div>
+                <p class="mt-2 text-muted" id="bmi-category"></p>
+            </div>
+
+            <!-- Calorie Section -->
+            <div class="card">
+                <h3>Daily Calorie Estimate</h3>
+                <div id="calorie-info">
+                    <p class="text-muted">Complete your profile to see calorie data</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Water Goal -->
+            <div class="card">
+                <h3>Daily Water Goal</h3>
+                <div id="water-info">
+                    <p class="text-muted">Complete your profile to see water goal</p>
+                </div>
+            </div>
+
+            <!-- Recent Progress -->
+            <div class="card">
+                <h3>Recent Progress</h3>
+                <div id="recent-progress">
+                    <p class="text-muted">No progress entries yet. <a href="progress.html">Add one</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; 2026 FitTrack. Personal Fitness Tracker.
+    </footer>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
