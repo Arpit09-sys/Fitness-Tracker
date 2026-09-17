@@ -79,6 +79,7 @@ Fitness-Tracker/
 - `POST /api/auth/signup` — Create a new account
 - `POST /api/auth/login` — Sign in to an account
 - `POST /api/auth/logout` — End the current session
+- `GET /api/auth/me` — Get the currently authenticated user session
 
 ### Dashboard
 - `GET /api/dashboard` — Get calculated metrics and recent progress entries

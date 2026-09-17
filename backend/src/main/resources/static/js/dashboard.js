@@ -53,6 +53,15 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     return data;
 }
 
+// Helper to get YYYY-MM-DD in local time
+function getLocalDateString(d = new Date()) {
+    const date = new Date(d);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 // Format goal text
 function formatGoal(goal) {
     const goals = { lose: 'Lose Weight', gain: 'Gain Muscle', maintain: 'Maintain' };
@@ -90,20 +99,54 @@ async function loadDashboard() {
         }
 
         // Calorie section
+        const calorieInfo = document.getElementById('calorie-info');
         if (d.bmr && d.dailyCalories) {
-            document.getElementById('calorie-info').innerHTML =
-                '<p style="margin-bottom: 8px;"><strong>BMR (Base Metabolic Rate):</strong> ' + d.bmr + ' cal/day</p>' +
-                '<p><strong>Estimated Daily Need:</strong> <span style="font-size: 20px; color: var(--primary); font-weight: 700;">' + d.dailyCalories + '</span> cal/day</p>' +
-                '<p class="text-muted mt-1" style="font-size: 13px;">Based on your activity level: ' + ((d.user && d.user.activityLevel) || 'sedentary') + '</p>';
+            calorieInfo.innerHTML = '';
+
+            const bmrP = document.createElement('p');
+            bmrP.style.marginBottom = '8px';
+            const bmrStrong = document.createElement('strong');
+            bmrStrong.textContent = 'BMR (Base Metabolic Rate): ';
+            bmrP.appendChild(bmrStrong);
+            bmrP.appendChild(document.createTextNode(d.bmr + ' cal/day'));
+            calorieInfo.appendChild(bmrP);
+
+            const calP = document.createElement('p');
+            const calStrong = document.createElement('strong');
+            calStrong.textContent = 'Estimated Daily Need: ';
+            calP.appendChild(calStrong);
+            const calSpan = document.createElement('span');
+            calSpan.style.fontSize = '20px';
+            calSpan.style.color = 'var(--primary)';
+            calSpan.style.fontWeight = '700';
+            calSpan.textContent = d.dailyCalories;
+            calP.appendChild(calSpan);
+            calP.appendChild(document.createTextNode(' cal/day'));
+            calorieInfo.appendChild(calP);
+
+            const actP = document.createElement('p');
+            actP.className = 'text-muted';
+            actP.style.fontSize = '13px';
+            actP.style.marginTop = '8px';
+            actP.textContent = 'Based on your activity level: ' + ((d.user && d.user.activityLevel) || 'sedentary');
+            calorieInfo.appendChild(actP);
+        } else if (d.user && d.user.gender === 'Other') {
+            calorieInfo.innerHTML = '';
+            const p = document.createElement('p');
+            p.className = 'text-muted';
+            p.textContent = 'BMR and daily calorie calculations are not available for gender selection "Other".';
+            calorieInfo.appendChild(p);
         }
 
         // Water section
         if (d.waterGoal) {
             let todayWater = 0;
             if (d.recentProgress && d.recentProgress.length > 0) {
-                const today = new Date().toISOString().split('T')[0];
+                const today = getLocalDateString();
                 const todayEntry = d.recentProgress.find(p => {
-                    const pDate = (typeof p.date === 'string') ? p.date.split('T')[0] : new Date(p.date).toISOString().split('T')[0];
+                    const pDate = (typeof p.date === 'string')
+                        ? (p.date.length === 10 ? p.date : p.date.split('T')[0])
+                        : getLocalDateString(p.date);
                     return pDate === today;
                 });
                 if (todayEntry) todayWater = todayEntry.waterIntake || 0;
@@ -111,27 +154,76 @@ async function loadDashboard() {
             const remaining = Math.max(d.waterGoal - todayWater, 0);
             const percentage = Math.min((todayWater / d.waterGoal) * 100, 100);
 
-            document.getElementById('water-info').innerHTML =
-                '<p><strong>Recommended:</strong> ' + d.waterGoal + ' ml</p>' +
-                '<p><strong>Today\'s Intake:</strong> ' + todayWater + ' ml</p>' +
-                '<div class="water-bar"><div class="water-fill" style="width: ' + percentage + '%;"></div></div>' +
-                '<p class="text-muted" style="font-size: 13px;"><strong>Remaining:</strong> ' + remaining + ' ml</p>';
+            const waterInfo = document.getElementById('water-info');
+            waterInfo.innerHTML = '';
+
+            const recP = document.createElement('p');
+            const recStrong = document.createElement('strong');
+            recStrong.textContent = 'Recommended: ';
+            recP.appendChild(recStrong);
+            recP.appendChild(document.createTextNode(d.waterGoal + ' ml'));
+            waterInfo.appendChild(recP);
+
+            const todayP = document.createElement('p');
+            const todayStrong = document.createElement('strong');
+            todayStrong.textContent = "Today's Intake: ";
+            todayP.appendChild(todayStrong);
+            todayP.appendChild(document.createTextNode(todayWater + ' ml'));
+            waterInfo.appendChild(todayP);
+
+            const barDiv = document.createElement('div');
+            barDiv.className = 'water-bar';
+            const fillDiv = document.createElement('div');
+            fillDiv.className = 'water-fill';
+            fillDiv.style.width = percentage + '%';
+            barDiv.appendChild(fillDiv);
+            waterInfo.appendChild(barDiv);
+
+            const remP = document.createElement('p');
+            remP.className = 'text-muted';
+            remP.style.fontSize = '13px';
+            const remStrong = document.createElement('strong');
+            remStrong.textContent = 'Remaining: ';
+            remP.appendChild(remStrong);
+            remP.appendChild(document.createTextNode(remaining + ' ml'));
+            waterInfo.appendChild(remP);
         }
 
         // Recent progress
         if (d.recentProgress && d.recentProgress.length > 0) {
-            let html = '<table><thead><tr><th>Date</th><th>Weight</th><th>Workout</th></tr></thead><tbody>';
+            const container = document.getElementById('recent-progress');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            thead.innerHTML = '<tr><th>Date</th><th>Weight</th><th>Workout</th></tr>';
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
             d.recentProgress.forEach(p => {
-                const date = (typeof p.date === 'string' && p.date.length === 10)
+                const tr = document.createElement('tr');
+
+                const dateTd = document.createElement('td');
+                dateTd.textContent = (typeof p.date === 'string' && p.date.length === 10)
                     ? p.date
-                    : new Date(p.date).toLocaleDateString();
-                const workout = p.workoutCompleted
-                    ? '<span class="badge badge-success">Yes</span>'
-                    : '<span class="badge badge-danger">No</span>';
-                html += '<tr><td>' + date + '</td><td>' + p.weight + ' kg</td><td>' + workout + '</td></tr>';
+                    : getLocalDateString(p.date);
+                tr.appendChild(dateTd);
+
+                const weightTd = document.createElement('td');
+                weightTd.textContent = p.weight + ' kg';
+                tr.appendChild(weightTd);
+
+                const workoutTd = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = p.workoutCompleted ? 'badge badge-success' : 'badge badge-danger';
+                badge.textContent = p.workoutCompleted ? 'Yes' : 'No';
+                workoutTd.appendChild(badge);
+                tr.appendChild(workoutTd);
+
+                tbody.appendChild(tr);
             });
-            html += '</tbody></table>';
-            document.getElementById('recent-progress').innerHTML = html;
+            table.appendChild(tbody);
+            container.appendChild(table);
         }
 
     } catch (error) {

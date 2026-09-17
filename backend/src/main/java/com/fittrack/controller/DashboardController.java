@@ -71,25 +71,28 @@ public class DashboardController {
         Integer bmr = null;
         Integer dailyCalories = null;
         if (user.getHeight() != null && user.getWeight() != null && user.getAge() != null && user.getGender() != null) {
-            double bmrValue;
+            Double bmrValue = null;
             if ("Male".equalsIgnoreCase(user.getGender())) {
                 bmrValue = 10 * user.getWeight() + 6.25 * user.getHeight() - 5 * user.getAge() + 5;
-            } else {
+            } else if ("Female".equalsIgnoreCase(user.getGender())) {
                 bmrValue = 10 * user.getWeight() + 6.25 * user.getHeight() - 5 * user.getAge() - 161;
             }
-            bmr = (int) Math.round(bmrValue);
 
-            // Activity level multiplier
-            double multiplier = 1.2; // default sedentary
-            if ("light".equalsIgnoreCase(user.getActivityLevel())) {
-                multiplier = 1.375;
-            } else if ("moderate".equalsIgnoreCase(user.getActivityLevel())) {
-                multiplier = 1.55;
-            } else if ("active".equalsIgnoreCase(user.getActivityLevel())) {
-                multiplier = 1.725;
+            if (bmrValue != null) {
+                bmr = (int) Math.round(bmrValue);
+
+                // Activity level multiplier
+                double multiplier = 1.2; // default sedentary
+                if ("light".equalsIgnoreCase(user.getActivityLevel())) {
+                    multiplier = 1.375;
+                } else if ("moderate".equalsIgnoreCase(user.getActivityLevel())) {
+                    multiplier = 1.55;
+                } else if ("active".equalsIgnoreCase(user.getActivityLevel())) {
+                    multiplier = 1.725;
+                }
+
+                dailyCalories = (int) Math.round(bmr * multiplier);
             }
-
-            dailyCalories = (int) Math.round(bmr * multiplier);
         }
 
         // 3. Calculate Daily Water Goal (weight in kg * 35 ml)

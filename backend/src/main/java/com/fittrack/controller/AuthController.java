@@ -54,6 +54,30 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        if (user.getAge() != null && (user.getAge() < 1 || user.getAge() > 120)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Age must be between 1 and 120");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (user.getHeight() != null && (user.getHeight() <= 0 || user.getHeight() > 300)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Height must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (user.getWeight() != null && (user.getWeight() <= 0 || user.getWeight() > 500)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Weight must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Prevent client from choosing user ID
+        user.setId(null);
+
         // Hash password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -133,6 +157,38 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "Logged out successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    // GET /api/auth/me - Get current session user
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        String userId = (String) session.getAttribute("userId");
+        if (userId == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        User user = optionalUser.get();
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("name", user.getName());
+        userData.put("email", user.getEmail());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("user", userData);
+
         return ResponseEntity.ok(response);
     }
 }

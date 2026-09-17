@@ -32,10 +32,17 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        if (progress.getWeight() == null) {
+        if (progress.getWeight() == null || progress.getWeight() <= 0 || progress.getWeight() > 500) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Weight is required");
+            response.put("error", "Weight must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (progress.getWaterIntake() != null && progress.getWaterIntake() < 0) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Water intake cannot be negative");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -97,6 +104,20 @@ public class ProgressController {
             response.put("success", false);
             response.put("error", "Not authorized to update this entry");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+
+        if (updatedData.getWeight() != null && (updatedData.getWeight() <= 0 || updatedData.getWeight() > 500)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Weight must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (updatedData.getWaterIntake() != null && updatedData.getWaterIntake() < 0) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Water intake cannot be negative");
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (updatedData.getWeight() != null) progress.setWeight(updatedData.getWeight());

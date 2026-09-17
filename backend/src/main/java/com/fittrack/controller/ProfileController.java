@@ -68,6 +68,28 @@ public class ProfileController {
         }
 
         User user = optionalUser.get();
+
+        if (updatedData.getAge() != null && (updatedData.getAge() < 1 || updatedData.getAge() > 120)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Age must be between 1 and 120");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (updatedData.getHeight() != null && (updatedData.getHeight() <= 0 || updatedData.getHeight() > 300)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Height must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (updatedData.getWeight() != null && (updatedData.getWeight() <= 0 || updatedData.getWeight() > 500)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Weight must be greater than 0");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         if (updatedData.getName() != null) user.setName(updatedData.getName());
         if (updatedData.getAge() != null) user.setAge(updatedData.getAge());
         if (updatedData.getGender() != null) user.setGender(updatedData.getGender());

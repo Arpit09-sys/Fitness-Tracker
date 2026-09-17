@@ -66,20 +66,30 @@ async function loadWorkouts() {
             return;
         }
 
-        let html = '';
+        tableBody.innerHTML = '';
         result.data.forEach(w => {
-            const date = (typeof w.date === 'string' && w.date.length === 10)
-                ? w.date
-                : new Date(w.date).toLocaleDateString();
+            const tr = document.createElement('tr');
 
-            html += '<tr>' +
-                '<td>' + date + '</td>' +
-                '<td>' + w.name + '</td>' +
-                '<td>' + w.duration + '</td>' +
-                '<td>' + (w.notes || '--') + '</td>' +
-                '</tr>';
+            const dateTd = document.createElement('td');
+            dateTd.textContent = (typeof w.date === 'string' && w.date.length === 10)
+                ? w.date
+                : (w.date ? new Date(w.date).toLocaleDateString() : '--');
+            tr.appendChild(dateTd);
+
+            const nameTd = document.createElement('td');
+            nameTd.textContent = w.name;
+            tr.appendChild(nameTd);
+
+            const durationTd = document.createElement('td');
+            durationTd.textContent = w.duration;
+            tr.appendChild(durationTd);
+
+            const notesTd = document.createElement('td');
+            notesTd.textContent = w.notes || '--';
+            tr.appendChild(notesTd);
+
+            tableBody.appendChild(tr);
         });
-        tableBody.innerHTML = html;
     } catch (error) {
         console.error('Error loading workouts:', error);
     }

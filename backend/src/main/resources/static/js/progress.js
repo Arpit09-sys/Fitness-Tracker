@@ -53,11 +53,19 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     return data;
 }
 
+// Helper to get YYYY-MM-DD in local time
+function getLocalDateString(d = new Date()) {
+    const date = new Date(d);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 // Set default date to today
 function setDefaultDate() {
     const dateInput = document.getElementById('date');
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
+    dateInput.value = getLocalDateString();
 }
 
 // Load progress entries into the table
@@ -73,54 +81,75 @@ async function loadProgress() {
             return;
         }
 
-        let html = '';
+        tableBody.innerHTML = '';
         result.data.forEach(p => {
-            const entryId = p.id;
-            const date = (typeof p.date === 'string' && p.date.length === 10)
+            const tr = document.createElement('tr');
+
+            const dateTd = document.createElement('td');
+            dateTd.textContent = (typeof p.date === 'string' && p.date.length === 10)
                 ? p.date
-                : new Date(p.date).toLocaleDateString();
+                : getLocalDateString(p.date);
+            tr.appendChild(dateTd);
 
-            const workout = p.workoutCompleted
-                ? '<span class="badge badge-success">Yes</span>'
-                : '<span class="badge badge-danger">No</span>';
+            const weightTd = document.createElement('td');
+            weightTd.textContent = p.weight;
+            tr.appendChild(weightTd);
 
-            const safeNotes = (p.notes || '').replace(/'/g, "\\'");
+            const workoutTd = document.createElement('td');
+            const workoutBadge = document.createElement('span');
+            workoutBadge.className = p.workoutCompleted ? 'badge badge-success' : 'badge badge-danger';
+            workoutBadge.textContent = p.workoutCompleted ? 'Yes' : 'No';
+            workoutTd.appendChild(workoutBadge);
+            tr.appendChild(workoutTd);
 
-            html += '<tr>' +
-                '<td>' + date + '</td>' +
-                '<td>' + p.weight + '</td>' +
-                '<td>' + workout + '</td>' +
-                '<td>' + (p.waterIntake || 0) + '</td>' +
-                '<td>' + (p.notes || '--') + '</td>' +
-                '<td>' +
-                    '<button class="btn btn-sm btn-primary" onclick="editProgress(\'' + entryId + '\', \'' + (p.date || '') + '\', ' + p.weight + ', ' + p.workoutCompleted + ', ' + (p.waterIntake || 0) + ', \'' + safeNotes + '\')">Edit</button> ' +
-                    '<button class="btn btn-sm btn-danger" onclick="deleteProgress(\'' + entryId + '\')">Delete</button>' +
-                '</td>' +
-                '</tr>';
+            const waterTd = document.createElement('td');
+            waterTd.textContent = p.waterIntake != null ? p.waterIntake : 0;
+            tr.appendChild(waterTd);
+
+            const notesTd = document.createElement('td');
+            notesTd.textContent = p.notes || '--';
+            tr.appendChild(notesTd);
+
+            const actionsTd = document.createElement('td');
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-sm btn-primary';
+            editBtn.textContent = 'Edit';
+            editBtn.style.marginRight = '5px';
+            editBtn.addEventListener('click', () => editProgress(p));
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-sm btn-danger';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', () => deleteProgress(p.id));
+
+            actionsTd.appendChild(editBtn);
+            actionsTd.appendChild(deleteBtn);
+            tr.appendChild(actionsTd);
+
+            tableBody.appendChild(tr);
         });
-        tableBody.innerHTML = html;
     } catch (error) {
         console.error('Error loading progress:', error);
     }
 }
 
 // Edit progress — populate form with existing data
-function editProgress(id, date, weight, workoutCompleted, waterIntake, notes) {
-    document.getElementById('edit-id').value = id;
+function editProgress(p) {
+    document.getElementById('edit-id').value = p.id;
 
     let dateVal = '';
-    if (date) {
-        if (typeof date === 'string' && date.length === 10) {
-            dateVal = date;
+    if (p.date) {
+        if (typeof p.date === 'string' && p.date.length === 10) {
+            dateVal = p.date;
         } else {
-            dateVal = new Date(date).toISOString().split('T')[0];
+            dateVal = getLocalDateString(p.date);
         }
     }
-    document.getElementById('date').value = dateVal || new Date().toISOString().split('T')[0];
-    document.getElementById('weight').value = weight;
-    document.getElementById('workoutCompleted').value = workoutCompleted ? 'true' : 'false';
-    document.getElementById('waterIntake').value = waterIntake;
-    document.getElementById('notes').value = notes;
+    document.getElementById('date').value = dateVal || getLocalDateString();
+    document.getElementById('weight').value = p.weight;
+    document.getElementById('workoutCompleted').value = p.workoutCompleted ? 'true' : 'false';
+    document.getElementById('waterIntake').value = p.waterIntake != null ? p.waterIntake : 0;
+    document.getElementById('notes').value = p.notes || '';
 
     document.getElementById('form-title').textContent = 'Edit Progress Entry';
     document.getElementById('submit-btn').textContent = 'Update Entry';

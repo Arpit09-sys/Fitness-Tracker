@@ -143,11 +143,6 @@ a {
     gap: 20px;
 }
 
-.grid-3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-}
 
 .grid-4 {
     display: grid;
@@ -240,15 +235,6 @@ a {
     background-color: var(--primary-hover);
 }
 
-.btn-success {
-    background-color: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background-color: #219a52;
-}
-
 .btn-danger {
     background-color: var(--danger);
     color: white;
@@ -318,12 +304,6 @@ table tr:hover td {
     background-color: #e8f5e9;
     color: var(--success);
     border: 1px solid #c3e6cb;
-}
-
-.alert-info {
-    background-color: #e3f2fd;
-    color: var(--primary);
-    border: 1px solid #bee5eb;
 }
 
 /* ========== Auth Pages (Login/Register) ========== */
@@ -423,28 +403,6 @@ table tr:hover td {
     color: var(--danger);
 }
 
-.badge-primary {
-    background-color: #e3f2fd;
-    color: var(--primary);
-}
-
-.badge-warning {
-    background-color: #fff8e1;
-    color: var(--warning);
-}
-
-
-/* ========== Empty State ========== */
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-secondary);
-}
-
-.empty-state p {
-    font-size: 15px;
-}
-
 /* ========== Footer ========== */
 .footer {
     text-align: center;
@@ -457,22 +415,15 @@ table tr:hover td {
 
 /* ========== Utility Classes ========== */
 .text-center { text-align: center; }
-.text-right { text-align: right; }
 .mt-1 { margin-top: 8px; }
 .mt-2 { margin-top: 16px; }
-.mt-3 { margin-top: 24px; }
-.mb-1 { margin-bottom: 8px; }
 .mb-2 { margin-bottom: 16px; }
-.mb-3 { margin-bottom: 24px; }
-.text-success { color: var(--success); }
-.text-danger { color: var(--danger); }
-.text-warning { color: var(--warning); }
 .text-muted { color: var(--text-secondary); }
 .hidden { display: none; }
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
-    .grid-2, .grid-3, .grid-4 {
+    .grid-2, .grid-4 {
         grid-template-columns: 1fr;
     }
 

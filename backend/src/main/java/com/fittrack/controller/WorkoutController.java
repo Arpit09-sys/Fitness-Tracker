@@ -37,6 +37,13 @@ public class WorkoutController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        if (workout.getDuration() <= 0 || workout.getDuration() > 1440) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Duration must be greater than 0 and less than 1440 minutes");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         workout.setUserId(userId);
         Workout savedWorkout = workoutRepository.save(workout);
 
