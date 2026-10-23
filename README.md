@@ -71,7 +71,6 @@ Fitness-Tracker/
 │                       ├── profile.js
 │                       ├── progress.js
 │                       └── workout.js
-├── .env.example
 ├── .gitignore
 └── README.md
 ```
