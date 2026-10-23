@@ -17,10 +17,10 @@ FitTrack is a simple web application designed to help users log workouts, track 
 ## Tech Stack
 
 - **Backend**: Java 21, Spring Boot (REST API)
-- **Database**: MongoDB Atlas, Spring Data MongoDB
+- **Database**: MySQL, Spring Data JPA, Hibernate
 - **Password Hashing**: BCrypt (`spring-security-crypto`)
 - **Frontend**: HTML, CSS, Vanilla JavaScript
-- **Architecture**: Simple 3-tier structure (Controller, Model, Repository)
+- **Architecture**: 4-tier layered architecture (Controller, Service, Repository, Entity)
 
 ---
 
@@ -41,14 +41,19 @@ Fitness-Tracker/
 │           │       │   ├── DashboardController.java
 │           │       │   ├── ProgressController.java
 │           │       │   └── WorkoutController.java
-│           │       ├── model/
-│           │       │   ├── User.java
-│           │       │   ├── Progress.java
-│           │       │   └── Workout.java
-│           │       └── repository/
-│           │           ├── UserRepository.java
-│           │           ├── ProgressRepository.java
-│           │           └── WorkoutRepository.java
+│           │       ├── service/
+│           │       │   ├── UserService.java
+│           │       │   ├── DashboardService.java
+│           │       │   ├── ProgressService.java
+│           │       │   └── WorkoutService.java
+│           │       ├── repository/
+│           │       │   ├── UserRepository.java
+│           │       │   ├── ProgressRepository.java
+│           │       │   └── WorkoutRepository.java
+│           │       └── entity/
+│           │           ├── User.java
+│           │           ├── Progress.java
+│           │           └── Workout.java
 │           └── resources/
 │               ├── application.properties
 │               └── static/
@@ -105,14 +110,16 @@ Fitness-Tracker/
 ### Prerequisites
 - Java 17 or Java 21 installed
 - Apache Maven installed
-- A MongoDB Atlas connection string (or local MongoDB)
+- MySQL 8.x installed and running
 
 ### Steps
 
-1. Set your MongoDB connection string in the environment:
+1. Configure MySQL credentials if different from defaults (`root` with no password):
    ```bash
-   export MONGO_URI="your_mongodb_connection_string"
+   export MYSQL_USER="root"
+   export MYSQL_PASSWORD="your_password"
    ```
+   *(By default, the application connects to `jdbc:mysql://localhost:3306/fittrack` and creates the `fittrack` database and tables automatically).*
 
 2. Navigate to the backend directory and run the application:
    ```bash

@@ -1,7 +1,7 @@
 package com.fittrack.controller;
 
-import com.fittrack.model.Workout;
-import com.fittrack.repository.WorkoutRepository;
+import com.fittrack.entity.Workout;
+import com.fittrack.service.WorkoutService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class WorkoutController {
 
     @Autowired
-    private WorkoutRepository workoutRepository;
+    private WorkoutService workoutService;
 
     // POST /api/workout - Add a workout
     @PostMapping
@@ -30,28 +30,20 @@ public class WorkoutController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        if (workout.getName() == null || workout.getName().trim().isEmpty() || workout.getDuration() == null) {
+        try {
+            Workout savedWorkout = workoutService.addWorkout(userId, workout);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", savedWorkout);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Workout name and duration are required");
+            response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
-
-        if (workout.getDuration() <= 0 || workout.getDuration() > 1440) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Duration must be greater than 0 and less than 1440 minutes");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        workout.setUserId(userId);
-        Workout savedWorkout = workoutRepository.save(workout);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("data", savedWorkout);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // GET /api/workout - Get all workouts for current user
@@ -65,7 +57,7 @@ public class WorkoutController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        List<Workout> workouts = workoutRepository.findByUserIdOrderByDateDesc(userId);
+        List<Workout> workouts = workoutService.getWorkoutsByUserId(userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

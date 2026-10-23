@@ -1,27 +1,34 @@
-package com.fittrack.model;
+package com.fittrack.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import jakarta.persistence.*;
 
 import java.util.Date;
 
-@Document(collection = "progresses")
+@Entity
+@Table(name = "progresses")
 public class Progress {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Field("user")
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
     private Date date;
 
     private Double weight;
+
+    @Column(name = "workout_completed")
     private Boolean workoutCompleted = false;
+
+    @Column(name = "water_intake")
     private Integer waterIntake = 0;
+
+    @Column(columnDefinition = "TEXT")
     private String notes = "";
 
     public Progress() {

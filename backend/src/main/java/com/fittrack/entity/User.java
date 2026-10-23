@@ -1,22 +1,32 @@
-package com.fittrack.model;
+package com.fittrack.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 
-@Document(collection = "users")
+@Entity
+@Table(name = "users")
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
     private Integer age;
     private String gender;
     private Double height;
     private Double weight;
+
+    @Column(name = "activity_level")
     private String activityLevel = "sedentary";
+
     private String goal = "maintain";
 
     public User() {
@@ -35,7 +45,6 @@ public class User {
     public void setId(String id) {
         this.id = id;
     }
-
 
     public String getName() {
         return name;

@@ -1,25 +1,31 @@
-package com.fittrack.model;
+package com.fittrack.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import jakarta.persistence.*;
 
 import java.util.Date;
 
-@Document(collection = "workouts")
+@Entity
+@Table(name = "workouts")
 public class Workout {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Field("user")
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private Integer duration;
+
+    @Column(columnDefinition = "TEXT")
     private String notes = "";
 
+    @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
     private Date date;
 

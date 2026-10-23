@@ -1,7 +1,7 @@
 package com.fittrack.controller;
 
-import com.fittrack.model.Progress;
-import com.fittrack.repository.ProgressRepository;
+import com.fittrack.entity.Progress;
+import com.fittrack.service.ProgressService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,14 +12,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/progress")
 public class ProgressController {
 
     @Autowired
-    private ProgressRepository progressRepository;
+    private ProgressService progressService;
 
     // POST /api/progress - Add new progress entry
     @PostMapping
@@ -32,28 +31,20 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        if (progress.getWeight() == null || progress.getWeight() <= 0 || progress.getWeight() > 500) {
+        try {
+            Progress savedProgress = progressService.addProgress(userId, progress);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", savedProgress);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Weight must be greater than 0");
+            response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
-
-        if (progress.getWaterIntake() != null && progress.getWaterIntake() < 0) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Water intake cannot be negative");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        progress.setUserId(userId);
-        Progress savedProgress = progressRepository.save(progress);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("data", savedProgress);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // GET /api/progress - Get all progress entries for current user
@@ -67,7 +58,7 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        List<Progress> progressList = progressRepository.findByUserIdOrderByDateDesc(userId);
+        List<Progress> progressList = progressService.getProgressByUserId(userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -88,51 +79,31 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        Optional<Progress> optionalProgress = progressRepository.findById(id);
-        if (optionalProgress.isEmpty()) {
+        try {
+            Progress savedProgress = progressService.updateProgress(userId, id, updatedData);
+            if (savedProgress == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("error", "Progress entry not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", savedProgress);
+
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Progress entry not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
-        Progress progress = optionalProgress.get();
-
-        // Check ownership
-        if (!userId.equals(progress.getUserId())) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Not authorized to update this entry");
+            response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-        }
-
-        if (updatedData.getWeight() != null && (updatedData.getWeight() <= 0 || updatedData.getWeight() > 500)) {
+        } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Weight must be greater than 0");
+            response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
-
-        if (updatedData.getWaterIntake() != null && updatedData.getWaterIntake() < 0) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Water intake cannot be negative");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        if (updatedData.getWeight() != null) progress.setWeight(updatedData.getWeight());
-        if (updatedData.getDate() != null) progress.setDate(updatedData.getDate());
-        if (updatedData.getWorkoutCompleted() != null) progress.setWorkoutCompleted(updatedData.getWorkoutCompleted());
-        if (updatedData.getWaterIntake() != null) progress.setWaterIntake(updatedData.getWaterIntake());
-        if (updatedData.getNotes() != null) progress.setNotes(updatedData.getNotes());
-
-        Progress savedProgress = progressRepository.save(progress);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("data", savedProgress);
-
-        return ResponseEntity.ok(response);
     }
 
     // DELETE /api/progress/{id} - Delete progress entry
@@ -146,30 +117,25 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
-        Optional<Progress> optionalProgress = progressRepository.findById(id);
-        if (optionalProgress.isEmpty()) {
+        try {
+            boolean deleted = progressService.deleteProgress(userId, id);
+            if (!deleted) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("error", "Progress entry not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", Collections.emptyMap());
+
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("error", "Progress entry not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
-        Progress progress = optionalProgress.get();
-
-        // Check ownership
-        if (!userId.equals(progress.getUserId())) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Not authorized to delete this entry");
+            response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
-
-        progressRepository.delete(progress);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("data", Collections.emptyMap());
-
-        return ResponseEntity.ok(response);
     }
 }
